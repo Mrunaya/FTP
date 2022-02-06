@@ -11,12 +11,13 @@ import java.net.Socket;
 
 public class FTPServer {
 	public final static int SERVER_PORT = 8081;  
-	public static String SERVER_DIRECTORY = "/Users/mrunayamac/Desktop"; 
+	public static String SERVER_DIRECTORY = System.getProperty("user.dir"); 
 	
 	public static void main(String[] args) throws IOException, ClassNotFoundException {
 		// TODO Auto-generated method stub
 		
-		ServerSocket serverSocket = new ServerSocket(SERVER_PORT);
+		int port=Integer.parseInt(args[0]);
+		ServerSocket serverSocket = new ServerSocket(port);
 		System.out.println("Server starting...");
 		System.out.println("The server started at port " + SERVER_PORT);
 		

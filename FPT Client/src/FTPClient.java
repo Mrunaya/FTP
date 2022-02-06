@@ -4,14 +4,17 @@ import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
 
 public class FTPClient {
-	public final static int CLIENT_PORT = 8081;  
-	public final static String CLIENT_DIRECTORY = "/Users/mrunayamac/Documents/"; 
+	//public final static int CLIENT_PORT = 8081;  
+	//public final static String CLIENT_DIRECTORY = System.getProperty("user.dir"); 
 	public static void main(String[] args) throws IOException {
 		// TODO Auto-generated method stub
-		Socket socket = new Socket("localhost",CLIENT_PORT);
+		String serverName=args[0];
+		int port=Integer.parseInt(args[1]);
+		
+		Socket socket = new Socket(serverName,port);
 		System.out.println("Connecting to Server..");
 		//ObjectOutputStream outputStream = new  ObjectOutputStream(socket.getOutputStream());
-		
+		//System.out.println(CLIENT_DIRECTORY);
 		
 		System.out.println("Server Connected!");
 		try  {
@@ -36,7 +39,7 @@ public class FTPClient {
 					outputStream.writeObject("1 "+fileName); 
 
 					InputStream inputStream =socket.getInputStream();
-					FileOutputStream fileStreamGet = new FileOutputStream(CLIENT_DIRECTORY+"copy"+fileName);
+					FileOutputStream fileStreamGet = new FileOutputStream("copy"+fileName);
 					byte bGet[] = new byte[1000];
 					inputStream.read(bGet, 0, bGet.length);
 					String s = new String(bGet, StandardCharsets.UTF_8);
@@ -49,7 +52,7 @@ public class FTPClient {
 					
 					ObjectOutputStream outputStreamPut = new  ObjectOutputStream(socket.getOutputStream());
 					
-					File file= new File(CLIENT_DIRECTORY+fileName);
+					File file= new File(fileName);
 					if(file.exists()) {
 					FileInputStream fileStreamPut = new FileInputStream(file);
 					outputStreamPut.writeObject("2 "+fileName);
