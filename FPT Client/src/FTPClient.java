@@ -1,9 +1,10 @@
 import java.io.*;
 import java.net.*;
+import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
 
 public class FTPClient {
-	public final static int CLIENT_PORT = 8080;  
+	public final static int CLIENT_PORT = 8081;  
 	public final static String CLIENT_DIRECTORY = "/Users/mrunayamac/Documents/"; 
 	public static void main(String[] args) throws IOException {
 		// TODO Auto-generated method stub
@@ -17,7 +18,7 @@ public class FTPClient {
 			Scanner sc = new Scanner(System.in);
 			while(true) {
 				//USER COMMANDS BEGIN FROM HERE----->
-				System.out.println("What service would you want to leverage?");
+				System.out.println("\n *** What service would you want to leverage? ***");
 				System.out.println(" 1 = Get file \n 2 = Put file \n 3 = Delete file \n"
 						+ " 4 = List Files \n 5 = Change directory \n 6 = Make directory \n 7 = Print current working directory \n 8 = Exit ");
 
@@ -34,16 +35,14 @@ public class FTPClient {
 					ObjectOutputStream outputStream = new  ObjectOutputStream(socket.getOutputStream());
 					outputStream.writeObject("1 "+fileName); 
 
-					ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());
+					InputStream inputStream =socket.getInputStream();
 					FileOutputStream fileStreamGet = new FileOutputStream(CLIENT_DIRECTORY+"copy"+fileName);
 					byte bGet[] = new byte[1000];
-					if(!"File do not exists".equalsIgnoreCase((String) inputStream.readObject())){
-						inputStream.read(bGet, 0, bGet.length);
-						fileStreamGet.write(bGet, 0, bGet.length);
-						System.out.println("File has been copied to local directory!");
-					}else {
-						System.out.println("File does not exists at the location!");
-					}
+					inputStream.read(bGet, 0, bGet.length);
+					String s = new String(bGet, StandardCharsets.UTF_8);
+					fileStreamGet.write(bGet, 0, bGet.length);
+					System.out.println("File has been copied to local directory!");
+						
 					break;
 
 				case "2": // Put file
@@ -59,7 +58,6 @@ public class FTPClient {
 					OutputStream os = socket.getOutputStream();
 					os.write(bPut, 0, bPut.length);
 					os.flush();
-					//outputStreamPut.reset();
 					System.out.println("File has been sent!");
 					}else {
 						System.out.println("File at the location do not exists!");
@@ -67,9 +65,22 @@ public class FTPClient {
 					break;
 
 				case "3": // Delete file
+					
+					ObjectOutputStream outputStreamDel = new ObjectOutputStream(socket.getOutputStream());
+					outputStreamDel.writeObject("3 "+fileName);
 					break;
 
 				case "4": // List files
+					//String list1 =sc.nextLine();
+					ObjectOutputStream outputStreamList = new ObjectOutputStream(socket.getOutputStream());
+					outputStreamList.writeObject("4");
+					
+					ObjectInputStream InputStreamList = new ObjectInputStream(socket.getInputStream());
+					String[] list = (String[])InputStreamList.readObject();
+					for(String s1:list)
+					{
+						System.out.print(s1+" ");
+					}
 					break;
 
 				case "5": // Change directory
@@ -87,12 +98,20 @@ public class FTPClient {
 					ObjectOutputStream outputStreammkdir = new  ObjectOutputStream(socket.getOutputStream());
 					outputStreammkdir.writeObject("6 "+mkdircmd);
 					break;
-	
 				case "7": //PWD
+					ObjectOutputStream outputStreampwd = new ObjectOutputStream(socket.getOutputStream());
+					outputStreampwd.writeObject("7 ");
+
+					ObjectInputStream outputStreampwd2 = new ObjectInputStream(socket.getInputStream());
+					String path = (String)outputStreampwd2.readObject();
+					System.out.println(path);
 					break;
 
 				case "8": 
-					socket.close();//Exit
+					ObjectOutputStream outputStreamExit = new ObjectOutputStream(socket.getOutputStream());
+					outputStreamExit.writeObject("8 ");
+					socket.close();
+					System.exit(0);//Exit
 					break;
 
 				default:
