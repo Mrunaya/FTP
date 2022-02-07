@@ -4,118 +4,102 @@ import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
 
 public class FTPClient {
-	//public final static int CLIENT_PORT = 8081;  
-	//public final static String CLIENT_DIRECTORY = System.getProperty("user.dir"); 
 	public static void main(String[] args) throws IOException {
 		// TODO Auto-generated method stub
+		String currentWorkingDirectory = "myftp>";
 		String serverName=args[0];
 		int port=Integer.parseInt(args[1]);
 		
 		Socket socket = new Socket(serverName,port);
-		System.out.println("Connecting to Server..");
-		//ObjectOutputStream outputStream = new  ObjectOutputStream(socket.getOutputStream());
-		//System.out.println(CLIENT_DIRECTORY);
+		String userCmd = "";
+		ObjectOutputStream outputStream = new  ObjectOutputStream(socket.getOutputStream());
+		ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());
 		
-		System.out.println("Server Connected!");
+		
 		try  {
 			Scanner sc = new Scanner(System.in);
-			while(true) {
+			while(!userCmd.equalsIgnoreCase("8")) {
+				System.out.print(currentWorkingDirectory);
 				//USER COMMANDS BEGIN FROM HERE----->
-				System.out.println("\n *** What service would you want to leverage? ***");
-				System.out.println(" 1 = Get file \n 2 = Put file \n 3 = Delete file \n"
-						+ " 4 = List Files \n 5 = Change directory \n 6 = Make directory \n 7 = Print current working directory \n 8 = Exit ");
-
-				String userCmd = sc.nextLine();
-				String fileName = "";
-				if (userCmd.equals("1") || userCmd.equals("2") ||userCmd.equals("3")) {
-					System.out.println("Please enter the file name");
-					 fileName = sc.nextLine();
-					
-				}
+				userCmd = sc.next();
+				String[] cmdVal = userCmd.split(" ");
 				
-				switch (userCmd) {
-				case "1": //  Get file from server->client
-					ObjectOutputStream outputStream = new  ObjectOutputStream(socket.getOutputStream());
-					outputStream.writeObject("1 "+fileName); 
+				
+				switch (cmdVal[0]) {
+				case "get": //  Get file from server->client
+					outputStream.writeObject("get "+cmdVal[1]); 
 
-					InputStream inputStream =socket.getInputStream();
-					FileOutputStream fileStreamGet = new FileOutputStream("copy"+fileName);
+					FileOutputStream fileStreamGet = new FileOutputStream(cmdVal[1]);
 					byte bGet[] = new byte[1000];
 					inputStream.read(bGet, 0, bGet.length);
-					String s = new String(bGet, StandardCharsets.UTF_8);
 					fileStreamGet.write(bGet, 0, bGet.length);
-					System.out.println("File has been copied to local directory!");
-						
+					//outputStream.flush();
 					break;
 
-				case "2": // Put file
+				case "put": // Put file
 					
-					ObjectOutputStream outputStreamPut = new  ObjectOutputStream(socket.getOutputStream());
 					
-					File file= new File(fileName);
+					File file= new File(cmdVal[1]);
 					if(file.exists()) {
 					FileInputStream fileStreamPut = new FileInputStream(file);
-					outputStreamPut.writeObject("2 "+fileName);
+					outputStream.writeObject("put "+cmdVal[1]);
 					byte bPut[] = new byte[1000];
 					fileStreamPut.read(bPut, 0, bPut.length);
-					OutputStream os = socket.getOutputStream();
-					os.write(bPut, 0, bPut.length);
-					os.flush();
-					System.out.println("File has been sent!");
+					outputStream.write(bPut, 0, bPut.length);
+					outputStream.flush();
 					}else {
-						System.out.println("File at the location do not exists!");
+						System.out.println("File at the location do not exists!\n");
 					}
+					//outputStream.flush();
 					break;
 
-				case "3": // Delete file
+				case "delete": // Delete file
 					
-					ObjectOutputStream outputStreamDel = new ObjectOutputStream(socket.getOutputStream());
-					outputStreamDel.writeObject("3 "+fileName);
+					outputStream.writeObject("delete "+cmdVal[1]);
+					outputStream.flush();
 					break;
 
-				case "4": // List files
+				case "ls": // List files
 					//String list1 =sc.nextLine();
-					ObjectOutputStream outputStreamList = new ObjectOutputStream(socket.getOutputStream());
-					outputStreamList.writeObject("4");
-					
-					ObjectInputStream InputStreamList = new ObjectInputStream(socket.getInputStream());
-					String[] list = (String[])InputStreamList.readObject();
+					outputStream.writeObject("ls");
+					//outputStream.flush();
+					String[] list = (String[])inputStream.readObject();
 					for(String s1:list)
 					{
 						System.out.print(s1+" ");
 					}
+					System.out.print("\n");
 					break;
 
-				case "5": // Change directory
-					System.out.println("Please enter change directory command");
-					String cdcmd = sc.nextLine();
+				case "cd": // Change directory
 					
-					ObjectOutputStream outputStreamCd = new  ObjectOutputStream(socket.getOutputStream());
-					outputStreamCd.writeObject("5 "+cdcmd);
+					outputStream.writeObject("cd "+cmdVal[1]);
+					//outputStream.flush();
 					break;
 
-				case "6": // Make directory
-					System.out.println("Please enter directory name");
-					String mkdircmd = sc.nextLine();
+				case "mkdir": // Make directory
 					
-					ObjectOutputStream outputStreammkdir = new  ObjectOutputStream(socket.getOutputStream());
-					outputStreammkdir.writeObject("6 "+mkdircmd);
+					outputStream.writeObject("mkdir "+cmdVal[1]);
+					//outputStream.flush();
 					break;
-				case "7": //PWD
-					ObjectOutputStream outputStreampwd = new ObjectOutputStream(socket.getOutputStream());
-					outputStreampwd.writeObject("7 ");
-
-					ObjectInputStream outputStreampwd2 = new ObjectInputStream(socket.getInputStream());
-					String path = (String)outputStreampwd2.readObject();
+				case "pwd": //PWD
+					outputStream.writeObject("pwd ");
+					outputStream.flush();
+					String path = (String)inputStream.readObject();
 					System.out.println(path);
+					
 					break;
 
-				case "8": 
-					ObjectOutputStream outputStreamExit = new ObjectOutputStream(socket.getOutputStream());
-					outputStreamExit.writeObject("8 ");
+				case "quit": //Exit
+					outputStream.writeObject("quit ");
+					//outputStream.flush();
+					String msg = (String)inputStream.readObject();
+					if(msg.equals("quit")) {
+					System.out.println("Client Quitted!\n");
+					}
+					inputStream.close();
 					socket.close();
-					System.exit(0);//Exit
-					break;
+					return;
 
 				default:
 					System.out.println("Invalid Command");

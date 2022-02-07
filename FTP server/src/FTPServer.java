@@ -20,46 +20,53 @@ public class FTPServer {
 		ServerSocket serverSocket = new ServerSocket(port);
 		System.out.println("Server starting...");
 		System.out.println("The server started at port " + SERVER_PORT);
-		
+		while(true) {
 			Socket socket = serverSocket.accept();
-
+			System.out.println("Client connected!");
 			
+			try{
+				ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());
+				ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
 
 			while(true) {
-				//ObjectOutputStream outputStream = new  ObjectOutputStream(socket.getOutputStream());
-				ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());
+				
 			String inputCmd = (String) inputStream.readObject();
 
 			String[] userInput = inputCmd.split(" ", 2);
+		
+			if("quit".equalsIgnoreCase(userInput[0])){
+				outputStream.writeObject("quit");
+				 inputStream.close();
+				 outputStream.close();
+				 break;
+			}
 			switch(userInput[0]) {
-			case "1":// get file
+			case "get":// get file
 				File file= new File(SERVER_DIRECTORY+"/"+userInput[1]);
-				OutputStream os = socket.getOutputStream();
 				byte bGet[] = new byte[1000];
 				if(file.exists()) {
 					FileInputStream fileInStream = new FileInputStream(file);
 					fileInStream.read(bGet, 0, bGet.length);
-
-					os.write(bGet, 0, bGet.length);
+					outputStream.write(bGet, 0, bGet.length);
 					System.out.println("File has been sent!");
 				}
 				else{
 					
-					os.write(bGet,0,bGet.length);
+					outputStream.write(bGet,0,bGet.length);
 					System.out.println("File do not exist!");
 				}
+				outputStream.flush();
 				break;
 
-			case "2":// put file
-				InputStream input =socket.getInputStream();
+			case "put":// put file
 				FileOutputStream fileStreamPut = new FileOutputStream(SERVER_DIRECTORY+"/copy"+userInput[1]);
 				byte bPut[] = new byte[1000];
-				input.read(bPut, 0, bPut.length);
+				inputStream.read(bPut, 0, bPut.length);
 				fileStreamPut.write(bPut, 0, bPut.length);
 				fileStreamPut.flush();
 				break;
 				
-			case "3": //Delete File
+			case "delete": //Delete File
 				File f2 = new File(SERVER_DIRECTORY+"/"+userInput[1]);
 				System.out.println("file to be delted:"+userInput[1]);
 				if (f2.delete())
@@ -72,28 +79,28 @@ public class FTPServer {
 				}
 				break;
 				
-			case "4": //List files
+			case "ls": //List files
 
 				File f1 = new File(SERVER_DIRECTORY);
 				String[] s=f1.list();
-				ObjectOutputStream outputStream = new  ObjectOutputStream(socket.getOutputStream());
+				//ObjectOutputStream outputStream = new  ObjectOutputStream(socket.getOutputStream());
 				outputStream.writeObject(s);
+				outputStream.flush();
 				
 				break;
 
-			case "5":// change directory
-				if(userInput[1].equals("cd ..")) {
+			case "cd":// change directory
+				if(userInput[1].equals("..")) {
 					SERVER_DIRECTORY=SERVER_DIRECTORY.substring(0, SERVER_DIRECTORY.lastIndexOf("/"));
 					System.out.println("Current directory chnaged to: "+SERVER_DIRECTORY);
 				}
 				else{
-					String[] directory=userInput[1].split(" ");
-					SERVER_DIRECTORY=SERVER_DIRECTORY.concat("/"+directory[1]);
+					SERVER_DIRECTORY=SERVER_DIRECTORY.concat("/"+userInput[1]);
 					System.out.println("Current directory chnaged to: "+SERVER_DIRECTORY);
 				}
 
 				break;
-			case "6":// make directory
+			case "mkdir":// make directory
 				File f = new File(SERVER_DIRECTORY.concat("/"+userInput[1]));
 				if (f.mkdir()) {
 					System.out.println("Directory" +userInput[1]+ "created");
@@ -102,16 +109,21 @@ public class FTPServer {
 					System.out.println("Directory cannot be created");
 				}
 			break;
-			case "7":// PWD
-				ObjectOutputStream outputStream1 = new  ObjectOutputStream(socket.getOutputStream());
-				outputStream1.writeObject(SERVER_DIRECTORY);
-				System.out.println(SERVER_DIRECTORY);
+			case "pwd":// PWD
+				//ObjectOutputStream outputStream1 = new  ObjectOutputStream(socket.getOutputStream());
+				outputStream.writeObject(SERVER_DIRECTORY);
+				outputStream.flush();
 			break;	
+			
+				
 
 			}
+			}
 
+		}catch(Exception e) {
+			e.printStackTrace();
 		}
-		
+		}
 
 	}
 
