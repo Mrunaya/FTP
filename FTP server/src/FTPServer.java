@@ -19,7 +19,7 @@ public class FTPServer {
 		int port=Integer.parseInt(args[0]);
 		ServerSocket serverSocket = new ServerSocket(port);
 		System.out.println("Server starting...");
-		System.out.println("The server started at port " + SERVER_PORT);
+		System.out.println("The server started at port " + port);
 		while(true) {
 			Socket socket = serverSocket.accept();
 			System.out.println("Client connected!");
