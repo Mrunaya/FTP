@@ -99,7 +99,7 @@ public class FTPClient {
 					//outputStream.flush();
 					String msg = (String)inputStream.readObject();
 					if(msg.equals("quit")) {
-					System.out.println("Client Quitted!\n");
+					System.out.println("Client Disconnected!\n");
 					}
 					inputStream.close();
 					socket.close();
