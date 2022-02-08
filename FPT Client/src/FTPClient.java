@@ -1,6 +1,10 @@
-import java.io.*;
-import java.net.*;
-import java.nio.charset.StandardCharsets;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
 import java.util.Scanner;
 
 public class FTPClient {
@@ -21,8 +25,8 @@ public class FTPClient {
 			while(!userCmd.equalsIgnoreCase("8")) {
 				System.out.print(currentWorkingDirectory);
 				//USER COMMANDS BEGIN FROM HERE----->
-				userCmd = sc.next();
-				String[] cmdVal = userCmd.split(" ");
+				userCmd = sc.nextLine();
+				String[] cmdVal = userCmd.split(" ", 2);
 				
 				
 				switch (cmdVal[0]) {
@@ -66,7 +70,7 @@ public class FTPClient {
 					String[] list = (String[])inputStream.readObject();
 					for(String s1:list)
 					{
-						System.out.print(s1+" ");
+						System.out.println(s1);
 					}
 					System.out.print("\n");
 					break;

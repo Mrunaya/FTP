@@ -31,7 +31,8 @@ public class FTPServer {
 			while(true) {
 				
 			String inputCmd = (String) inputStream.readObject();
-
+			System.out.println("Input command is : " + inputCmd);
+			
 			String[] userInput = inputCmd.split(" ", 2);
 		
 			if("quit".equalsIgnoreCase(userInput[0])){
