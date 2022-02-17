@@ -60,7 +60,7 @@ public class FTPServer {
 				break;
 
 			case "put":// put file
-				FileOutputStream fileStreamPut = new FileOutputStream(SERVER_DIRECTORY+"/copy"+userInput[1]);
+				FileOutputStream fileStreamPut = new FileOutputStream(SERVER_DIRECTORY+"/"+userInput[1]);
 				byte bPut[] = new byte[1000];
 				inputStream.read(bPut, 0, bPut.length);
 				fileStreamPut.write(bPut, 0, bPut.length);
